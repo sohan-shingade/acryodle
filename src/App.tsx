@@ -362,6 +362,35 @@ function ShareBar({ g, T, GC }: { g: Game; T: ReturnType<typeof palette>; GC: Re
   );
 }
 
+// Annotated breakdown of a graded tile — shared by the intro + how-to-play.
+function UiBreakdown({ T, GC, cb }: { T: ReturnType<typeof palette>; GC: ReturnType<typeof gradeColors>; cb: boolean }) {
+  const yellow = cb ? GC.yellow : "#b59a2e";
+  const lbl: React.CSSProperties = { fontSize: 7.5, fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: "0.02em", width: 38, textAlign: "right", flexShrink: 0 };
+  const val: React.CSSProperties = { fontSize: 9, fontWeight: 600 };
+  return (
+    <div style={{ border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px", margin: "0 0 12px" }}>
+      <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Reading a tile</div>
+      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+        <div style={{ flexShrink: 0 }}>
+          <div style={{ width: 56, height: 56, background: yellow, color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", borderRadius: 3 }}>
+            <span style={{ fontWeight: 700, fontSize: 20, lineHeight: 1 }}>A</span>
+            <span style={{ fontSize: 7.5, marginTop: 2 }}>Amazon</span>
+          </div>
+          <div style={{ marginTop: 4, display: "flex", flexDirection: "column", gap: 1 }}>
+            <div style={{ display: "flex", gap: 4, alignItems: "baseline" }}><span style={lbl}>Mkt&nbsp;cap</span><span style={{ ...val, color: T.muted }}>$2.8T ▼ far</span></div>
+            <div style={{ display: "flex", gap: 4, alignItems: "baseline" }}><span style={lbl}>Sector</span><span style={{ ...val, color: yellow }}>E-comm · rel</span></div>
+          </div>
+        </div>
+        <ul style={{ margin: 0, paddingLeft: 15, fontSize: 11.5, color: T.muted, lineHeight: 1.5 }}>
+          <li><b style={{ color: GC.green }}>green</b> exact · <b style={{ color: yellow }}>yellow</b> in lineup, wrong slot · <b>gray</b> not in it.</li>
+          <li><b>Mkt cap</b>: ▲ answer bigger · ▼ smaller. How near: <b>≈size</b> → <b>close</b> → <b>far</b>.</li>
+          <li><b>Sector</b>: <b>same</b> → <b>rel</b>ated → <b>diff</b>erent.</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 // ── Modals ──────────────────────────────────────────────────────
 function Modals({ g, T, GC, winPct }: { g: Game; T: ReturnType<typeof palette>; GC: ReturnType<typeof gradeColors>; winPct: number }) {
   if (!g.modal) return null;
@@ -384,15 +413,7 @@ function Modals({ g, T, GC, winPct }: { g: Game; T: ReturnType<typeof palette>; 
             <p style={{ margin: "0 0 10px" }}>Think of <b>FAANG</b> — a famous acronym that's secretly a lineup of companies: Facebook · Apple · Amazon · Netflix · Google.</p>
             <p style={{ margin: "0 0 10px" }}>Each day, one such acronym is <b>hidden</b>. You don't see the letters — you have <b>{g.N} empty slots</b>. Guess a tech company for each; their first initials spell the acronym.</p>
 
-            <div style={{ background: T.panel, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px", margin: "0 0 12px" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>How a guess is graded</div>
-              <p style={{ margin: "0 0 8px", fontSize: 12.5 }}>
-                <span style={{ color: GC.green, fontWeight: 700 }}>green</span> right company, right slot ·{" "}
-                <span style={{ color: g.settings.colorblind ? GC.yellow : "#b59a2e", fontWeight: 700 }}>yellow</span> in the lineup, wrong slot ·{" "}
-                <span style={{ color: T.muted, fontWeight: 700 }}>gray</span> not in it.
-              </p>
-              <p style={{ margin: 0, fontSize: 12, color: T.muted }}>Each tile also points by <b>market cap</b> (▲ the answer is bigger / ▼ smaller) and <b>sector</b> — so even a wrong guess narrows it down.</p>
-            </div>
+            <UiBreakdown T={T} GC={GC} cb={g.settings.colorblind} />
 
             <p style={{ margin: "0 0 16px", fontSize: 12.5, color: T.muted }}>Tip: while searching, every candidate shows its cap and sector — use them to reason about who fits. Solve it in {g.MAX} guesses.</p>
 
@@ -403,13 +424,11 @@ function Modals({ g, T, GC, winPct }: { g: Game; T: ReturnType<typeof palette>; 
         {g.modal === "help" && (
           <div style={{ fontSize: 13, lineHeight: 1.55 }}>
             <h3 style={{ margin: "0 0 8px" }}>How to play</h3>
-            <p style={{ margin: "0 0 8px" }}>A hidden acronym (like MANGOS) is several tech companies. Just start typing — it opens the next empty slot and searches. <b>Enter</b> picks the top result and jumps ahead; <b>⌫</b> deletes the last tile.</p>
-            <p style={{ margin: "0 0 8px" }}>
-              <span style={{ color: GC.green, fontWeight: 700 }}>green</span> right company &amp; slot ·{" "}
-              <span style={{ color: g.settings.colorblind ? GC.yellow : "#b59a2e", fontWeight: 700 }}>yellow</span> in the group, wrong slot ·{" "}
-              <span style={{ color: T.muted, fontWeight: 700 }}>gray</span> not in it.
-            </p>
-            <p style={{ margin: 0 }}>Each tile also shows how your pick compares by <b>market cap</b> (▲ real one bigger / ▼ smaller) and <b>sector</b>. The picker remembers what you've ruled in (✓) and out (✗).</p>
+            <p style={{ margin: "0 0 10px" }}>An acronym is hidden — you have {g.N} empty slots. Guess a tech company for each; their initials spell it. Start typing to open the next slot and search; <b>Enter</b> picks the top result and jumps ahead, <b>⌫</b> deletes the last tile.</p>
+
+            <UiBreakdown T={T} GC={GC} cb={g.settings.colorblind} />
+
+            <p style={{ margin: 0, fontSize: 12.5, color: T.muted }}>The picker remembers what you've ruled in (✓) and out (✗), and shows each candidate's cap and sector so every guess is informed.</p>
           </div>
         )}
 

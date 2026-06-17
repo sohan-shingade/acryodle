@@ -40,13 +40,11 @@ export default function App() {
           </p>
         )}
 
-        {/* The acronym is the prompt: show the word + a plain instruction. */}
-        <div style={{ textAlign: "center", marginTop: 14 }}>
-          <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: "0.16em", lineHeight: 1 }}>{g.puzzle.name}</div>
-          <p style={{ fontSize: 12.5, color: T.muted, margin: "6px 0 0" }}>
-            Name a tech company for each letter. Together they're a famous acronym.
-          </p>
-        </div>
+        {/* Goal line — the acronym itself is hidden; you deduce it. */}
+        <p style={{ textAlign: "center", fontSize: 12.5, color: T.muted, margin: "12px 0 0", lineHeight: 1.5 }}>
+          Guess the <b style={{ color: T.ink }}>{g.N} companies</b> whose initials spell a hidden tech acronym.
+          <br />Each guess is graded — use the hints to crack it.
+        </p>
 
         {g.toast && (
           <div style={{ position: "fixed", top: 66, left: "50%", transform: "translateX(-50%)", background: g.settings.dark ? "#fff" : T.ink, color: g.settings.dark ? "#000" : "#fff", padding: "10px 16px", borderRadius: 6, fontSize: 13, fontWeight: 600, zIndex: 70, maxWidth: "90%", textAlign: "center" }}>
@@ -120,10 +118,10 @@ function Board({ g, T, GC, cellBox, grid }: { g: Game; T: ReturnType<typeof pale
             {rowPicks.map((pid, i) =>
               isCurrent ? (
                 <button key={i} onClick={() => g.openSlotAt(i)} style={{ padding: 0, border: "none", background: "none", cursor: "pointer" }}>
-                  <InputTile name={pid} active={g.openSlot === i} letter={g.puzzle.name[i]} g={g} T={T} cellBox={cellBox} />
+                  <InputTile name={pid} active={g.openSlot === i} slot={i} g={g} T={T} cellBox={cellBox} />
                 </button>
               ) : (
-                <GhostTile key={i} letter={g.puzzle.name[i]} T={T} cellBox={cellBox} />
+                <div key={i} style={cellBox} />
               ),
             )}
           </div>
@@ -177,24 +175,19 @@ function Hint({ name, truthName, g, T, GC }: { name: string; truthName: string; 
   );
 }
 
-function InputTile({ name, active, letter, g, T, cellBox }: { name: string | null; active: boolean; letter: string; g: Game; T: ReturnType<typeof palette>; cellBox: React.CSSProperties }) {
+function InputTile({ name, active, slot, g, T, cellBox }: { name: string | null; active: boolean; slot: number; g: Game; T: ReturnType<typeof palette>; cellBox: React.CSSProperties }) {
   const c = name ? g.BY_NAME[name] : null;
   return (
     <div style={{ ...cellBox, borderColor: active ? T.ink : c ? T.muted : T.empty, color: T.ink, background: T.bg }}>
-      {/* Empty slot shows its target initial faintly so you know what to fill. */}
-      <span style={{ fontSize: "clamp(15px,5vw,24px)", fontWeight: 700, lineHeight: 1, color: c ? T.ink : T.muted, opacity: c ? 1 : 0.45 }}>
-        {c ? c.name[0].toUpperCase() : letter.toUpperCase()}
-      </span>
-      {c && <span style={{ fontSize: "clamp(6px,1.6vw,8px)", marginTop: 2, maxWidth: "94%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>}
-    </div>
-  );
-}
-
-// Faint letter shown on not-yet-reached rows so the whole acronym is visible.
-function GhostTile({ letter, T, cellBox }: { letter: string; T: ReturnType<typeof palette>; cellBox: React.CSSProperties }) {
-  return (
-    <div style={{ ...cellBox }}>
-      <span style={{ fontSize: "clamp(15px,5vw,24px)", fontWeight: 700, lineHeight: 1, color: T.muted, opacity: 0.25 }}>{letter.toUpperCase()}</span>
+      {c ? (
+        <>
+          <span style={{ fontSize: "clamp(15px,5vw,24px)", fontWeight: 700, lineHeight: 1 }}>{c.name[0].toUpperCase()}</span>
+          <span style={{ fontSize: "clamp(6px,1.6vw,8px)", marginTop: 2, maxWidth: "94%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
+        </>
+      ) : (
+        // Empty slot shows its number (not the answer letter — that stays hidden).
+        <span style={{ fontSize: "clamp(11px,3vw,15px)", fontWeight: 700, lineHeight: 1, color: T.muted, opacity: 0.4 }}>{slot + 1}</span>
+      )}
     </div>
   );
 }
@@ -206,13 +199,13 @@ function Picker({ g, T, GC }: { g: Game; T: ReturnType<typeof palette>; GC: Retu
       {g.openSlot !== null ? (
         <div style={{ background: T.panel, border: `1px solid ${T.border}`, borderRadius: 8, padding: 8 }}>
           <p style={{ margin: "0 0 6px", fontSize: 12, color: T.muted, textAlign: "center" }}>
-            Slot {g.openSlot + 1}: pick a company starting with <b style={{ color: T.ink }}>{g.puzzle.name[g.openSlot]}</b>
+            Filling slot {g.openSlot + 1} of {g.N} — search any tech company
           </p>
           <input
             ref={g.inputRef}
             value={g.q}
             onChange={(e) => g.setQ(e.target.value)}
-            placeholder={`Search "${g.puzzle.name[g.openSlot]}" companies…`}
+            placeholder="Search companies… (Enter picks top)"
             style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: 6, padding: "8px 10px", fontSize: 13, marginBottom: 8, outline: "none", background: T.bg, color: T.ink }}
           />
           <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 6, maxHeight: 210, overflow: "auto" }}>
@@ -224,12 +217,16 @@ function Picker({ g, T, GC }: { g: Game; T: ReturnType<typeof palette>; GC: Retu
                   onClick={() => g.choose(c.name)}
                   style={{ textAlign: "left", fontSize: 12.5, padding: "8px 10px", borderRadius: 6, border: `1px solid ${idx === 0 ? T.muted : T.border}`, background: T.bg, color: st === "out" ? T.muted : T.ink, cursor: "pointer", display: "flex", gap: 6, alignItems: "center", textDecoration: st === "out" ? "line-through" : "none" }}
                 >
-                  <b style={{ color: g.settings.colorblind ? GC.yellow : "#b59a2e", width: 12 }}>{c.name[0].toUpperCase()}</b>
-                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                  <b style={{ color: g.settings.colorblind ? GC.yellow : "#b59a2e", width: 12, flexShrink: 0 }}>{c.name[0].toUpperCase()}</b>
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
                     {c.name}{c.pvt && <span style={{ fontSize: 9, color: T.muted }}> ·pvt</span>}
                   </span>
-                  {st === "in" && <span style={{ color: GC.green, fontSize: 11 }}>✓</span>}
-                  {st === "out" && <span style={{ color: T.muted, fontSize: 11 }}>✗</span>}
+                  {/* Show each candidate's cap + sector so guesses are informed. */}
+                  <span style={{ fontSize: 10.5, color: T.muted, whiteSpace: "nowrap", flexShrink: 0 }}>
+                    {capLabel(c.cap)} · {SECTOR_LABEL[c.sector]}
+                  </span>
+                  {st === "in" && <span style={{ color: GC.green, fontSize: 11, flexShrink: 0 }}>✓</span>}
+                  {st === "out" && <span style={{ color: T.muted, fontSize: 11, flexShrink: 0 }}>✗</span>}
                 </button>
               );
             })}
@@ -237,7 +234,7 @@ function Picker({ g, T, GC }: { g: Game; T: ReturnType<typeof palette>; GC: Retu
           </div>
         </div>
       ) : (
-        <p style={{ textAlign: "center", fontSize: 12, color: T.muted, margin: "6px 0" }}>Tap any letter tile above to fill it.</p>
+        <p style={{ textAlign: "center", fontSize: 12, color: T.muted, margin: "6px 0" }}>Tap a slot above, or just start typing.</p>
       )}
       <button onClick={g.submit} style={{ marginTop: 10, width: "100%", padding: "14px", borderRadius: 6, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 14, letterSpacing: "0.04em", background: g.filled ? GC.green : T.empty, color: g.filled ? "#fff" : T.ink }}>
         ENTER
@@ -348,22 +345,20 @@ function Modals({ g, T, GC, winPct }: { g: Game; T: ReturnType<typeof palette>; 
             <h2 style={{ margin: "0 0 4px", letterSpacing: "0.05em" }}>ACRYODLE</h2>
             <p style={{ margin: "0 0 12px", color: T.muted, fontSize: 12.5 }}>A daily Wordle for Big Tech acronyms.</p>
 
-            <p style={{ margin: "0 0 10px" }}>You know <b>FAANG</b> — Facebook, Apple, Amazon, Netflix, Google. It's an acronym that's secretly a <i>lineup of companies</i>.</p>
-            <p style={{ margin: "0 0 10px" }}>Each day ACRYODLE hides one such acronym. Your job: <b>name the company in every slot.</b></p>
+            <p style={{ margin: "0 0 10px" }}>Think of <b>FAANG</b> — a famous acronym that's secretly a lineup of companies: Facebook · Apple · Amazon · Netflix · Google.</p>
+            <p style={{ margin: "0 0 10px" }}>Each day, one such acronym is <b>hidden</b>. You don't see the letters — you have <b>{g.N} empty slots</b>. Guess a tech company for each; their first initials spell the acronym.</p>
 
             <div style={{ background: T.panel, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px", margin: "0 0 12px" }}>
-              <div style={{ fontWeight: 800, letterSpacing: "0.18em", fontSize: 15, marginBottom: 4 }}>F A A N G</div>
-              <div style={{ fontSize: 12, color: T.muted }}>↳ Facebook · Apple · Amazon · Netflix · Google</div>
-              <div style={{ fontSize: 11.5, color: T.muted, marginTop: 6 }}>Each letter is one company. Fill all five to solve it.</div>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>How a guess is graded</div>
+              <p style={{ margin: "0 0 8px", fontSize: 12.5 }}>
+                <span style={{ color: GC.green, fontWeight: 700 }}>green</span> right company, right slot ·{" "}
+                <span style={{ color: g.settings.colorblind ? GC.yellow : "#b59a2e", fontWeight: 700 }}>yellow</span> in the lineup, wrong slot ·{" "}
+                <span style={{ color: T.muted, fontWeight: 700 }}>gray</span> not in it.
+              </p>
+              <p style={{ margin: 0, fontSize: 12, color: T.muted }}>Each tile also points by <b>market cap</b> (▲ the answer is bigger / ▼ smaller) and <b>sector</b> — so even a wrong guess narrows it down.</p>
             </div>
 
-            <p style={{ margin: "0 0 8px" }}>After each guess, tiles grade Wordle-style:</p>
-            <p style={{ margin: "0 0 12px" }}>
-              <span style={{ color: GC.green, fontWeight: 700 }}>green</span> right company &amp; slot ·{" "}
-              <span style={{ color: g.settings.colorblind ? GC.yellow : "#b59a2e", fontWeight: 700 }}>yellow</span> in the lineup, wrong slot ·{" "}
-              <span style={{ color: T.muted, fontWeight: 700 }}>gray</span> not in it.
-            </p>
-            <p style={{ margin: "0 0 16px", fontSize: 12.5, color: T.muted }}>Tiles also hint <b>market cap</b> (▲ bigger / ▼ smaller) and <b>sector</b> to steer your next guess. Just start typing to begin.</p>
+            <p style={{ margin: "0 0 16px", fontSize: 12.5, color: T.muted }}>Tip: while searching, every candidate shows its cap and sector — use them to reason about who fits. Solve it in {g.MAX} guesses.</p>
 
             <button onClick={g.dismissIntro} style={{ width: "100%", padding: "12px", borderRadius: 6, border: "none", background: GC.green, color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Play →</button>
           </div>

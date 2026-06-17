@@ -67,12 +67,8 @@ export function useGame() {
   const filled = picks.every(Boolean);
 
   const list = useMemo(() => {
-    // Only companies whose initial matches the open slot's letter can be the
-    // answer there, so constrain the picker to them — far less overwhelming.
-    const letter = openSlot !== null ? ANSWER[openSlot]?.[0]?.toLowerCase() : null;
-    const pool = letter ? COMPANIES.filter((c) => c.name[0].toLowerCase() === letter) : COMPANIES;
     const s = q.trim().toLowerCase();
-    if (!s) return pool;
+    if (!s) return COMPANIES;
     // Rank: exact > prefix > word-boundary > substring; ties keep original order.
     const rank = (name: string) => {
       const n = name.toLowerCase();
@@ -81,12 +77,12 @@ export function useGame() {
       if (n.split(/[^a-z0-9]+/).some((w) => w.startsWith(s))) return 2;
       return 3;
     };
-    return pool
+    return COMPANIES
       .map((c, i) => ({ c, i, r: rank(c.name) }))
       .filter((x) => x.c.name.toLowerCase().includes(s))
       .sort((a, b) => a.r - b.r || a.i - b.i)
       .map((x) => x.c);
-  }, [q, openSlot, pIdx]);
+  }, [q]);
 
   const known = useMemo(() => {
     const m: Record<string, "in" | "out"> = {};

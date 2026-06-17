@@ -18,7 +18,7 @@ function save<T>(key: string, value: T): void {
   }
 }
 
-export const DEFAULT_SETTINGS: Settings = { dark: false, colorblind: false, hard: false };
+export const DEFAULT_SETTINGS: Settings = { dark: true, colorblind: false, hard: false };
 export const DEFAULT_STATS: Stats = { played: 0, wins: 0, cur: 0, max: 0, lastDay: null, dist: {} };
 
 export const loadSettings = () => load<Settings>("settings", DEFAULT_SETTINGS);

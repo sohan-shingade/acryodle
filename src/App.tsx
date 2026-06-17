@@ -160,15 +160,28 @@ function SubmittedTile({ name, truthName, animate, delay, g, T, GC, cellBox }: {
 }
 
 function Hint({ name, truthName, g, T, GC }: { name: string; truthName: string; g: Game; T: ReturnType<typeof palette>; GC: ReturnType<typeof gradeColors> }) {
-  if (sameCompany(name, truthName)) return <div style={{ textAlign: "center", fontSize: 9, color: GC.green, fontWeight: 700, paddingTop: 2 }}>✓ correct</div>;
   const guess = g.BY_NAME[name];
   const truth = g.BY_NAME[truthName];
+  // Actual stats of the guessed company — shown on every row so you can reason
+  // about the numbers, not just the relative hint.
+  const stats = (
+    <div style={{ fontSize: 9, fontWeight: 600, color: T.muted }}>{capLabel(guess.cap)} · {SECTOR_LABEL[guess.sector]}</div>
+  );
+  if (sameCompany(name, truthName)) {
+    return (
+      <div style={{ textAlign: "center", paddingTop: 2, lineHeight: 1.3 }}>
+        {stats}
+        <div style={{ fontSize: 9, fontWeight: 700, color: GC.green }}>✓ correct</div>
+      </div>
+    );
+  }
   const cap = capGrade(guess, truth);
   const sec = sectorGrade(guess, truth);
   const cC = cap.grade === "correct" ? GC.green : cap.grade === "close" ? (g.settings.dark ? GC.yellow : "#9a7d12") : T.muted;
   const sC = sec === "correct" ? GC.green : sec === "close" ? (g.settings.dark ? GC.yellow : "#9a7d12") : T.muted;
   return (
-    <div style={{ textAlign: "center", paddingTop: 2, lineHeight: 1.25 }}>
+    <div style={{ textAlign: "center", paddingTop: 2, lineHeight: 1.3 }}>
+      {stats}
       <div style={{ fontSize: 9, fontWeight: 600, color: cC }}>Cap {cap.arrow} {CAP_WORD[cap.grade]}</div>
       <div style={{ fontSize: 9, fontWeight: 600, color: sC }}>{SEC_WORD[sec]}</div>
     </div>

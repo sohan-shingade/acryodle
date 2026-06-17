@@ -1,0 +1,13 @@
+{
+  "name": "TICKERDLE",
+  "short_name": "TICKERDLE",
+  "description": "A daily Wordle for Big Tech acronyms.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6aaa64",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

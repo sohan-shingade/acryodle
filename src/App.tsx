@@ -162,28 +162,20 @@ function SubmittedTile({ name, truthName, animate, delay, g, T, GC, cellBox }: {
 function Hint({ name, truthName, g, T, GC }: { name: string; truthName: string; g: Game; T: ReturnType<typeof palette>; GC: ReturnType<typeof gradeColors> }) {
   const guess = g.BY_NAME[name];
   const truth = g.BY_NAME[truthName];
-  // Actual stats of the guessed company — shown on every row so you can reason
-  // about the numbers, not just the relative hint.
-  const stats = (
-    <div style={{ fontSize: 9, fontWeight: 600, color: T.muted }}>{capLabel(guess.cap)} · {SECTOR_LABEL[guess.sector]}</div>
-  );
-  if (sameCompany(name, truthName)) {
-    return (
-      <div style={{ textAlign: "center", paddingTop: 2, lineHeight: 1.3 }}>
-        {stats}
-        <div style={{ fontSize: 9, fontWeight: 700, color: GC.green }}>✓ correct</div>
-      </div>
-    );
-  }
+  const correct = sameCompany(name, truthName);
   const cap = capGrade(guess, truth);
   const sec = sectorGrade(guess, truth);
-  const cC = cap.grade === "correct" ? GC.green : cap.grade === "close" ? (g.settings.dark ? GC.yellow : "#9a7d12") : T.muted;
-  const sC = sec === "correct" ? GC.green : sec === "close" ? (g.settings.dark ? GC.yellow : "#9a7d12") : T.muted;
+  const tone = (grade: string) => (grade === "correct" ? GC.green : grade === "close" ? (g.settings.dark ? GC.yellow : "#9a7d12") : T.muted);
+  // One line per stat: the company's actual value + how it compares.
+  const line: React.CSSProperties = { fontSize: 8.5, fontWeight: 600, lineHeight: 1.35, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
   return (
-    <div style={{ textAlign: "center", paddingTop: 2, lineHeight: 1.3 }}>
-      {stats}
-      <div style={{ fontSize: 9, fontWeight: 600, color: cC }}>Cap {cap.arrow} {CAP_WORD[cap.grade]}</div>
-      <div style={{ fontSize: 9, fontWeight: 600, color: sC }}>{SEC_WORD[sec]}</div>
+    <div style={{ textAlign: "center", paddingTop: 2 }}>
+      <div style={{ ...line, color: correct ? GC.green : tone(cap.grade) }}>
+        {capLabel(guess.cap)} {correct ? "✓" : <>{cap.arrow} {CAP_WORD[cap.grade]}</>}
+      </div>
+      <div style={{ ...line, color: correct ? GC.green : tone(sec) }}>
+        {SECTOR_LABEL[guess.sector]} {correct ? "✓" : `· ${SEC_WORD[sec]}`}
+      </div>
     </div>
   );
 }

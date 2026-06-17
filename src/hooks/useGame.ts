@@ -6,6 +6,7 @@ import { dayNumber, dailyIndex } from "../lib/daily";
 import { canonical, sameCompany } from "../lib/grading";
 import {
   loadSettings, saveSettings, loadStats, saveStats, loadDaily, saveDaily,
+  loadSeenIntro, saveSeenIntro,
 } from "../lib/storage";
 
 // Guesses scale with word length: short words get the classic 6, longer ones
@@ -40,7 +41,10 @@ export function useGame() {
   const [shake, setShake] = useState(false);
   const [confetti, setConfetti] = useState(false);
   const [shareText, setShareText] = useState("");
-  const [modal, setModal] = useState<"help" | "stats" | "settings" | null>(null);
+  const [modal, setModal] = useState<"intro" | "help" | "stats" | "settings" | null>(
+    loadSeenIntro() ? null : "intro",
+  );
+  function dismissIntro() { saveSeenIntro(); setModal(null); }
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const countedKey = useRef<string | null>(null); // guards double stat counting
@@ -244,7 +248,7 @@ export function useGame() {
     rows, picks, openSlot, q, filled, won, lost, done,
     list, known, learned, BY_NAME,
     settings, stats, toast, shake, confetti, shareText, modal, inputRef,
-    setQ, choose, submit, removeLast, openSlotAt, startForever, nextForever, backToDaily, share, nativeShare, buildShare, setModal,
+    setQ, choose, submit, removeLast, openSlotAt, startForever, nextForever, backToDaily, share, nativeShare, buildShare, setModal, dismissIntro,
     toggleDark: () => setSettings((s) => ({ ...s, dark: !s.dark })),
     toggleCb: () => setSettings((s) => ({ ...s, colorblind: !s.colorblind })),
     toggleHard: () => {

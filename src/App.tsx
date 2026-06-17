@@ -316,9 +316,35 @@ function Modals({ g, T, GC, winPct }: { g: Game; T: ReturnType<typeof palette>; 
     ["Hard mode (reuse revealed hints)", g.settings.hard, g.toggleHard],
   ];
   return (
-    <div onClick={() => g.setModal(null)} style={{ position: "fixed", inset: 0, background: T.overlay, zIndex: 80, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+    <div onClick={() => (g.modal === "intro" ? g.dismissIntro() : g.setModal(null))} style={{ position: "fixed", inset: 0, background: T.overlay, zIndex: 80, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: T.bg, color: T.ink, border: `1px solid ${T.border}`, borderRadius: 10, maxWidth: 420, width: "100%", padding: 18, position: "relative", maxHeight: "85vh", overflow: "auto" }}>
-        <button onClick={() => g.setModal(null)} style={{ position: "absolute", top: 10, right: 12, border: "none", background: "none", fontSize: 18, cursor: "pointer", color: T.muted }}>✕</button>
+        <button onClick={() => (g.modal === "intro" ? g.dismissIntro() : g.setModal(null))} style={{ position: "absolute", top: 10, right: 12, border: "none", background: "none", fontSize: 18, cursor: "pointer", color: T.muted }}>✕</button>
+
+        {g.modal === "intro" && (
+          <div style={{ fontSize: 13.5, lineHeight: 1.6 }}>
+            <h2 style={{ margin: "0 0 4px", letterSpacing: "0.05em" }}>TICKERDLE</h2>
+            <p style={{ margin: "0 0 12px", color: T.muted, fontSize: 12.5 }}>A daily Wordle for Big Tech acronyms.</p>
+
+            <p style={{ margin: "0 0 10px" }}>You know <b>FAANG</b> — Facebook, Apple, Amazon, Netflix, Google. It's an acronym that's secretly a <i>lineup of companies</i>.</p>
+            <p style={{ margin: "0 0 10px" }}>Each day TICKERDLE hides one such acronym. Your job: <b>name the company in every slot.</b></p>
+
+            <div style={{ background: T.panel, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px", margin: "0 0 12px" }}>
+              <div style={{ fontWeight: 800, letterSpacing: "0.18em", fontSize: 15, marginBottom: 4 }}>F A A N G</div>
+              <div style={{ fontSize: 12, color: T.muted }}>↳ Facebook · Apple · Amazon · Netflix · Google</div>
+              <div style={{ fontSize: 11.5, color: T.muted, marginTop: 6 }}>Each letter is one company. Fill all five to solve it.</div>
+            </div>
+
+            <p style={{ margin: "0 0 8px" }}>After each guess, tiles grade Wordle-style:</p>
+            <p style={{ margin: "0 0 12px" }}>
+              <span style={{ color: GC.green, fontWeight: 700 }}>green</span> right company &amp; slot ·{" "}
+              <span style={{ color: g.settings.colorblind ? GC.yellow : "#b59a2e", fontWeight: 700 }}>yellow</span> in the lineup, wrong slot ·{" "}
+              <span style={{ color: T.muted, fontWeight: 700 }}>gray</span> not in it.
+            </p>
+            <p style={{ margin: "0 0 16px", fontSize: 12.5, color: T.muted }}>Tiles also hint <b>market cap</b> (▲ bigger / ▼ smaller) and <b>sector</b> to steer your next guess. Just start typing to begin.</p>
+
+            <button onClick={g.dismissIntro} style={{ width: "100%", padding: "12px", borderRadius: 6, border: "none", background: GC.green, color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Play →</button>
+          </div>
+        )}
 
         {g.modal === "help" && (
           <div style={{ fontSize: 13, lineHeight: 1.55 }}>

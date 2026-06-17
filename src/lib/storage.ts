@@ -29,3 +29,7 @@ export const saveStats = (s: Stats) => save("stats", s);
 
 export const loadDaily = (day: number) => load<DailyState | null>(`day:${day}`, null);
 export const saveDaily = (day: number, state: DailyState) => save(`day:${day}`, state);
+
+// First-visit flag so the intro/how-to-play only auto-opens once.
+export const loadSeenIntro = () => load<boolean>("seenIntro", false);
+export const saveSeenIntro = () => save("seenIntro", true);

@@ -1,6 +1,6 @@
 import type { Settings, Stats, DailyState } from "../types";
 
-const PREFIX = "tickerdle:";
+const PREFIX = "acryodle:";
 
 function load<T>(key: string, fallback: T): T {
   try {

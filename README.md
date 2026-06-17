@@ -1,4 +1,4 @@
-# TICKERDLE
+# ACRYODLE
 
 A daily **Wordle for Big Tech acronyms**. A hidden acronym (FAANG, MANGOS, GAMMA, …)
 is a lineup of companies; you fill a company into each slot and every guess is graded

@@ -13,19 +13,19 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
   }
 
   componentDidCatch(error: Error) {
-    if (import.meta.env.DEV) console.error("[tickerdle] render crash:", error);
+    if (import.meta.env.DEV) console.error("[acryodle] render crash:", error);
   }
 
   render() {
     if (!this.state.error) return this.props.children;
     return (
       <div style={{ fontFamily: "Helvetica, Arial, sans-serif", maxWidth: 420, margin: "60px auto", padding: 24, textAlign: "center", color: "#1a1a1b" }}>
-        <h1 style={{ fontSize: 22, letterSpacing: "0.06em" }}>TICKERDLE</h1>
+        <h1 style={{ fontSize: 22, letterSpacing: "0.06em" }}>ACRYODLE</h1>
         <p style={{ color: "#787c7e", fontSize: 14 }}>Something went wrong loading the game.</p>
         <button
           onClick={() => {
             try {
-              Object.keys(localStorage).filter((k) => k.startsWith("tickerdle:")).forEach((k) => localStorage.removeItem(k));
+              Object.keys(localStorage).filter((k) => k.startsWith("acryodle:")).forEach((k) => localStorage.removeItem(k));
             } catch { /* ignore */ }
             location.reload();
           }}

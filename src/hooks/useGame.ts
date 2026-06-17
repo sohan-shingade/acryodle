@@ -229,7 +229,7 @@ export function useGame() {
 
   function buildShare() {
     const tag = isDaily ? `#${DAY}` : `∞ ${puzzle.name}`;
-    const head = `TICKERDLE ${tag}  ${won ? rows.length : "X"}/${MAX}${settings.hard ? "*" : ""}`;
+    const head = `ACRYODLE ${tag}  ${won ? rows.length : "X"}/${MAX}${settings.hard ? "*" : ""}`;
     const grid = rows
       .map((r) => r.map((p, i) => (sameCompany(p, ANSWER[i]) ? "🟩" : inAnswer(p) ? "🟨" : "⬛")).join(""))
       .join("\n");
@@ -246,7 +246,7 @@ export function useGame() {
     const text = buildShare();
     const url = typeof location !== "undefined" ? location.href : "";
     if (typeof navigator !== "undefined" && navigator.share) {
-      try { await navigator.share({ title: "TICKERDLE", text, url }); return; }
+      try { await navigator.share({ title: "ACRYODLE", text, url }); return; }
       catch { /* user dismissed the sheet — fall through to copy */ }
     }
     try { await navigator.clipboard.writeText(url ? `${text}\n${url}` : text); setToast("Results copied"); }

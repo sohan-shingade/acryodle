@@ -1,6 +1,6 @@
 {
-  "name": "TICKERDLE",
-  "short_name": "TICKERDLE",
+  "name": "ACRYODLE",
+  "short_name": "ACRYODLE",
   "description": "A daily Wordle for Big Tech acronyms.",
   "start_url": ".",
   "scope": ".",

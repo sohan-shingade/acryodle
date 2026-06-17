@@ -166,10 +166,12 @@ function Hint({ name, truthName, g, T, GC }: { name: string; truthName: string; 
   const cap = capGrade(guess, truth);
   const sec = sectorGrade(guess, truth);
   const tone = (grade: string) => (grade === "correct" ? GC.green : grade === "close" ? (g.settings.dark ? GC.yellow : "#9a7d12") : T.muted);
-  // One line per stat: the company's actual value + how it compares.
-  const line: React.CSSProperties = { fontSize: 8.5, fontWeight: 600, lineHeight: 1.35, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
+  // One line per stat: the company's actual value + how it compares. minWidth:0
+  // lets the grid column stay 1fr (aligned with the tile) instead of widening to
+  // fit the text; lines wrap rather than overflow.
+  const line: React.CSSProperties = { fontSize: 8.5, fontWeight: 600, lineHeight: 1.3, wordBreak: "break-word" };
   return (
-    <div style={{ textAlign: "center", paddingTop: 2 }}>
+    <div style={{ textAlign: "center", paddingTop: 2, minWidth: 0 }}>
       <div style={{ ...line, color: correct ? GC.green : tone(cap.grade) }}>
         {capLabel(guess.cap)} {correct ? "✓" : <>{cap.arrow} {CAP_WORD[cap.grade]}</>}
       </div>

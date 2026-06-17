@@ -67,8 +67,12 @@ export function useGame() {
   const filled = picks.every(Boolean);
 
   const list = useMemo(() => {
+    // Only companies whose initial matches the open slot's letter can be the
+    // answer there, so constrain the picker to them — far less overwhelming.
+    const letter = openSlot !== null ? ANSWER[openSlot]?.[0]?.toLowerCase() : null;
+    const pool = letter ? COMPANIES.filter((c) => c.name[0].toLowerCase() === letter) : COMPANIES;
     const s = q.trim().toLowerCase();
-    if (!s) return COMPANIES;
+    if (!s) return pool;
     // Rank: exact > prefix > word-boundary > substring; ties keep original order.
     const rank = (name: string) => {
       const n = name.toLowerCase();
@@ -77,12 +81,12 @@ export function useGame() {
       if (n.split(/[^a-z0-9]+/).some((w) => w.startsWith(s))) return 2;
       return 3;
     };
-    return COMPANIES
+    return pool
       .map((c, i) => ({ c, i, r: rank(c.name) }))
       .filter((x) => x.c.name.toLowerCase().includes(s))
       .sort((a, b) => a.r - b.r || a.i - b.i)
       .map((x) => x.c);
-  }, [q]);
+  }, [q, openSlot, pIdx]);
 
   const known = useMemo(() => {
     const m: Record<string, "in" | "out"> = {};
@@ -116,6 +120,15 @@ export function useGame() {
   // ── ephemeral effects ────────────────────────────────────────
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(""), 1800); return () => clearTimeout(t); }, [toast]);
   useEffect(() => { if (openSlot !== null) setTimeout(() => inputRef.current?.focus(), 0); }, [openSlot]);
+
+  // On first load, open the first empty slot so it's obvious how to start.
+  const autoOpened = useRef(false);
+  useEffect(() => {
+    if (autoOpened.current) return;
+    autoOpened.current = true;
+    if (!done && picks.every((p) => !p)) setOpenSlot(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── midnight rollover ────────────────────────────────────────
   // Re-arm a timer to the next UTC midnight; when it fires, bump DAY so an

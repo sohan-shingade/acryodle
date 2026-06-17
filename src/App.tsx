@@ -32,13 +32,21 @@ export default function App() {
           </div>
         </header>
         <p style={{ textAlign: "center", fontSize: 12, color: T.muted, margin: "8px 0 0" }}>
-          {g.isDaily ? `Daily #${g.DAY}` : "Forever ∞"} · guess the hidden {g.N}-company acronym{g.settings.hard ? " · hard" : ""}
+          {g.isDaily ? `Daily #${g.DAY}` : "Forever ∞"}{g.settings.hard ? " · hard mode" : ""}
         </p>
         {!g.isDaily && (
           <p style={{ textAlign: "center", margin: "4px 0 0" }}>
             <button onClick={g.backToDaily} style={{ background: "none", border: "none", color: GC.green, fontSize: 12, fontWeight: 700, cursor: "pointer", padding: 0 }}>← back to today's puzzle</button>
           </p>
         )}
+
+        {/* The acronym is the prompt: show the word + a plain instruction. */}
+        <div style={{ textAlign: "center", marginTop: 14 }}>
+          <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: "0.16em", lineHeight: 1 }}>{g.puzzle.name}</div>
+          <p style={{ fontSize: 12.5, color: T.muted, margin: "6px 0 0" }}>
+            Name a tech company for each letter. Together they're a famous acronym.
+          </p>
+        </div>
 
         {g.toast && (
           <div style={{ position: "fixed", top: 66, left: "50%", transform: "translateX(-50%)", background: g.settings.dark ? "#fff" : T.ink, color: g.settings.dark ? "#000" : "#fff", padding: "10px 16px", borderRadius: 6, fontSize: 13, fontWeight: 600, zIndex: 70, maxWidth: "90%", textAlign: "center" }}>
@@ -112,10 +120,10 @@ function Board({ g, T, GC, cellBox, grid }: { g: Game; T: ReturnType<typeof pale
             {rowPicks.map((pid, i) =>
               isCurrent ? (
                 <button key={i} onClick={() => g.openSlotAt(i)} style={{ padding: 0, border: "none", background: "none", cursor: "pointer" }}>
-                  <InputTile name={pid} active={g.openSlot === i} g={g} T={T} cellBox={cellBox} />
+                  <InputTile name={pid} active={g.openSlot === i} letter={g.puzzle.name[i]} g={g} T={T} cellBox={cellBox} />
                 </button>
               ) : (
-                <div key={i} style={cellBox} />
+                <GhostTile key={i} letter={g.puzzle.name[i]} T={T} cellBox={cellBox} />
               ),
             )}
           </div>
@@ -169,12 +177,24 @@ function Hint({ name, truthName, g, T, GC }: { name: string; truthName: string; 
   );
 }
 
-function InputTile({ name, active, g, T, cellBox }: { name: string | null; active: boolean; g: Game; T: ReturnType<typeof palette>; cellBox: React.CSSProperties }) {
+function InputTile({ name, active, letter, g, T, cellBox }: { name: string | null; active: boolean; letter: string; g: Game; T: ReturnType<typeof palette>; cellBox: React.CSSProperties }) {
   const c = name ? g.BY_NAME[name] : null;
   return (
-    <div style={{ ...cellBox, borderColor: active || c ? T.muted : T.empty, color: T.ink, background: T.bg }}>
-      <span style={{ fontSize: "clamp(15px,5vw,24px)", fontWeight: 700, lineHeight: 1 }}>{c ? c.name[0].toUpperCase() : ""}</span>
+    <div style={{ ...cellBox, borderColor: active ? T.ink : c ? T.muted : T.empty, color: T.ink, background: T.bg }}>
+      {/* Empty slot shows its target initial faintly so you know what to fill. */}
+      <span style={{ fontSize: "clamp(15px,5vw,24px)", fontWeight: 700, lineHeight: 1, color: c ? T.ink : T.muted, opacity: c ? 1 : 0.45 }}>
+        {c ? c.name[0].toUpperCase() : letter.toUpperCase()}
+      </span>
       {c && <span style={{ fontSize: "clamp(6px,1.6vw,8px)", marginTop: 2, maxWidth: "94%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>}
+    </div>
+  );
+}
+
+// Faint letter shown on not-yet-reached rows so the whole acronym is visible.
+function GhostTile({ letter, T, cellBox }: { letter: string; T: ReturnType<typeof palette>; cellBox: React.CSSProperties }) {
+  return (
+    <div style={{ ...cellBox }}>
+      <span style={{ fontSize: "clamp(15px,5vw,24px)", fontWeight: 700, lineHeight: 1, color: T.muted, opacity: 0.25 }}>{letter.toUpperCase()}</span>
     </div>
   );
 }
@@ -185,11 +205,14 @@ function Picker({ g, T, GC }: { g: Game; T: ReturnType<typeof palette>; GC: Retu
     <div style={{ marginTop: 16 }}>
       {g.openSlot !== null ? (
         <div style={{ background: T.panel, border: `1px solid ${T.border}`, borderRadius: 8, padding: 8 }}>
+          <p style={{ margin: "0 0 6px", fontSize: 12, color: T.muted, textAlign: "center" }}>
+            Slot {g.openSlot + 1}: pick a company starting with <b style={{ color: T.ink }}>{g.puzzle.name[g.openSlot]}</b>
+          </p>
           <input
             ref={g.inputRef}
             value={g.q}
             onChange={(e) => g.setQ(e.target.value)}
-            placeholder="Type to search · Enter picks top · ⌫ deletes"
+            placeholder={`Search "${g.puzzle.name[g.openSlot]}" companies…`}
             style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: 6, padding: "8px 10px", fontSize: 13, marginBottom: 8, outline: "none", background: T.bg, color: T.ink }}
           />
           <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 6, maxHeight: 210, overflow: "auto" }}>
@@ -214,7 +237,7 @@ function Picker({ g, T, GC }: { g: Game; T: ReturnType<typeof palette>; GC: Retu
           </div>
         </div>
       ) : (
-        <p style={{ textAlign: "center", fontSize: 12, color: T.muted, margin: "6px 0" }}>Tap a tile or just start typing.</p>
+        <p style={{ textAlign: "center", fontSize: 12, color: T.muted, margin: "6px 0" }}>Tap any letter tile above to fill it.</p>
       )}
       <button onClick={g.submit} style={{ marginTop: 10, width: "100%", padding: "14px", borderRadius: 6, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 14, letterSpacing: "0.04em", background: g.filled ? GC.green : T.empty, color: g.filled ? "#fff" : T.ink }}>
         ENTER

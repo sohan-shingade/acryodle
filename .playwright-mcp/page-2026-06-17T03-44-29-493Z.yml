@@ -1,0 +1,37 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - button "how to play" [ref=e7] [cursor=pointer]: "?"
+        - button "settings" [ref=e8] [cursor=pointer]: ⚙
+      - heading "ACRYODLE" [level=1] [ref=e9]
+      - generic [ref=e10]:
+        - button "stats" [ref=e11] [cursor=pointer]: 📊
+        - button "theme" [ref=e12] [cursor=pointer]: ☀
+    - paragraph [ref=e13]: "Daily #1 · guess the hidden 6-company acronym"
+    - generic [ref=e15]:
+      - button [ref=e16] [cursor=pointer]
+      - button [ref=e18] [cursor=pointer]
+      - button [ref=e20] [cursor=pointer]
+      - button [ref=e22] [cursor=pointer]
+      - button [ref=e24] [cursor=pointer]
+      - button [ref=e26] [cursor=pointer]
+    - generic [ref=e63]:
+      - paragraph [ref=e64]: Tap a tile or just start typing.
+      - button "ENTER" [ref=e65] [cursor=pointer]
+    - contentinfo [ref=e66]: 110-company universe · caps approx June 2026 · saved to this browser
+  - generic [ref=e68]:
+    - button "✕" [ref=e69] [cursor=pointer]
+    - generic [ref=e70]:
+      - heading "ACRYODLE" [level=2] [ref=e71]
+      - paragraph [ref=e72]: A daily Wordle for Big Tech acronyms.
+      - paragraph [ref=e73]: You know FAANG — Facebook, Apple, Amazon, Netflix, Google. It's an acronym that's secretly a lineup of companies.
+      - paragraph [ref=e74]: "Each day ACRYODLE hides one such acronym. Your job: name the company in every slot."
+      - generic [ref=e75]:
+        - generic [ref=e76]: F A A N G
+        - generic [ref=e77]: ↳ Facebook · Apple · Amazon · Netflix · Google
+        - generic [ref=e78]: Each letter is one company. Fill all five to solve it.
+      - paragraph [ref=e79]: "After each guess, tiles grade Wordle-style:"
+      - paragraph [ref=e80]: green right company & slot · yellow in the lineup, wrong slot · gray not in it.
+      - paragraph [ref=e81]: Tiles also hint market cap (▲ bigger / ▼ smaller) and sector to steer your next guess. Just start typing to begin.
+      - button "Play →" [ref=e82] [cursor=pointer]

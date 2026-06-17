@@ -1,0 +1,106 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - button "how to play" [ref=e7] [cursor=pointer]: "?"
+        - button "settings" [ref=e8] [cursor=pointer]: ⚙
+      - heading "ACRYODLE" [level=1] [ref=e9]
+      - generic [ref=e10]:
+        - button "stats" [ref=e11] [cursor=pointer]: 📊
+        - button "theme" [ref=e12] [cursor=pointer]: ☀
+    - paragraph [ref=e13]: "Daily #1"
+    - generic [ref=e14]:
+      - generic [ref=e15]: MANGOS
+      - paragraph [ref=e16]: Name a tech company for each letter. Together they're a famous acronym.
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - button "M" [ref=e19] [cursor=pointer]:
+          - generic [ref=e21]: M
+        - button "A" [ref=e22] [cursor=pointer]:
+          - generic [ref=e24]: A
+        - button "N" [ref=e25] [cursor=pointer]:
+          - generic [ref=e27]: "N"
+        - button "G" [ref=e28] [cursor=pointer]:
+          - generic [ref=e30]: G
+        - button "O" [ref=e31] [cursor=pointer]:
+          - generic [ref=e33]: O
+        - button "S" [ref=e34] [cursor=pointer]:
+          - generic [ref=e36]: S
+      - generic [ref=e37]:
+        - generic [ref=e39]: M
+        - generic [ref=e41]: A
+        - generic [ref=e43]: "N"
+        - generic [ref=e45]: G
+        - generic [ref=e47]: O
+        - generic [ref=e49]: S
+      - generic [ref=e50]:
+        - generic [ref=e52]: M
+        - generic [ref=e54]: A
+        - generic [ref=e56]: "N"
+        - generic [ref=e58]: G
+        - generic [ref=e60]: O
+        - generic [ref=e62]: S
+      - generic [ref=e63]:
+        - generic [ref=e65]: M
+        - generic [ref=e67]: A
+        - generic [ref=e69]: "N"
+        - generic [ref=e71]: G
+        - generic [ref=e73]: O
+        - generic [ref=e75]: S
+      - generic [ref=e76]:
+        - generic [ref=e78]: M
+        - generic [ref=e80]: A
+        - generic [ref=e82]: "N"
+        - generic [ref=e84]: G
+        - generic [ref=e86]: O
+        - generic [ref=e88]: S
+      - generic [ref=e89]:
+        - generic [ref=e91]: M
+        - generic [ref=e93]: A
+        - generic [ref=e95]: "N"
+        - generic [ref=e97]: G
+        - generic [ref=e99]: O
+        - generic [ref=e101]: S
+    - generic [ref=e102]:
+      - generic [ref=e103]:
+        - paragraph [ref=e104]: "Slot 1: pick a company starting with M"
+        - textbox "Search \"M\" companies…" [active] [ref=e105]
+        - generic [ref=e106]:
+          - button "M Microsoft" [ref=e107] [cursor=pointer]:
+            - generic [ref=e108]: M
+            - generic [ref=e109]: Microsoft
+          - button "M Meta" [ref=e110] [cursor=pointer]:
+            - generic [ref=e111]: M
+            - generic [ref=e112]: Meta
+          - button "M Mastercard" [ref=e113] [cursor=pointer]:
+            - generic [ref=e114]: M
+            - generic [ref=e115]: Mastercard
+          - button "M McDonald's" [ref=e116] [cursor=pointer]:
+            - generic [ref=e117]: M
+            - generic [ref=e118]: McDonald's
+          - button "M Micron" [ref=e119] [cursor=pointer]:
+            - generic [ref=e120]: M
+            - generic [ref=e121]: Micron
+          - button "M Marvell" [ref=e122] [cursor=pointer]:
+            - generic [ref=e123]: M
+            - generic [ref=e124]: Marvell
+          - button "M MongoDB" [ref=e125] [cursor=pointer]:
+            - generic [ref=e126]: M
+            - generic [ref=e127]: MongoDB
+      - button "ENTER" [ref=e128] [cursor=pointer]
+    - contentinfo [ref=e129]: 110-company universe · caps approx June 2026 · saved to this browser
+  - generic [ref=e131]:
+    - button "✕" [ref=e132] [cursor=pointer]
+    - generic [ref=e133]:
+      - heading "ACRYODLE" [level=2] [ref=e134]
+      - paragraph [ref=e135]: A daily Wordle for Big Tech acronyms.
+      - paragraph [ref=e136]: You know FAANG — Facebook, Apple, Amazon, Netflix, Google. It's an acronym that's secretly a lineup of companies.
+      - paragraph [ref=e137]: "Each day ACRYODLE hides one such acronym. Your job: name the company in every slot."
+      - generic [ref=e138]:
+        - generic [ref=e139]: F A A N G
+        - generic [ref=e140]: ↳ Facebook · Apple · Amazon · Netflix · Google
+        - generic [ref=e141]: Each letter is one company. Fill all five to solve it.
+      - paragraph [ref=e142]: "After each guess, tiles grade Wordle-style:"
+      - paragraph [ref=e143]: green right company & slot · yellow in the lineup, wrong slot · gray not in it.
+      - paragraph [ref=e144]: Tiles also hint market cap (▲ bigger / ▼ smaller) and sector to steer your next guess. Just start typing to begin.
+      - button "Play →" [ref=e145] [cursor=pointer]

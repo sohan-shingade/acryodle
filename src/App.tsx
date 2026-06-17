@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, type CSSProperties } from "react";
 import { useGame, type Game } from "./hooks/useGame";
 import { palette, gradeColors } from "./theme";
-import { capGrade, sectorGrade, sameCompany, canonical, CAP_WORD, SEC_WORD, SECTOR_LABEL, capLabel } from "./lib/grading";
+import { capGrade, sectorGrade, sameCompany, canonical, SECTOR_LABEL, capLabel } from "./lib/grading";
 import type { Company } from "./types";
 
 export default function App() {
@@ -88,9 +88,25 @@ export default function App() {
   );
 }
 
+// Left-gutter width: holds the per-row "Mkt cap / Sector" labels and keeps
+// every row's tiles aligned to the same left edge.
+const GUTTER = 40;
+const HINT_LINE = "13px"; // fixed line height shared by hints + gutter labels
+
+// One board row: a fixed-width gutter on the left, then the N-column grid.
+function Shell({ gutter, grid, children }: { gutter: React.ReactNode; grid: React.CSSProperties; children: React.ReactNode }) {
+  return (
+    <div style={{ display: "flex", gap: 6, alignItems: "stretch" }}>
+      <div style={{ width: GUTTER, flexShrink: 0 }}>{gutter}</div>
+      <div style={{ flex: 1, minWidth: 0, ...grid }}>{children}</div>
+    </div>
+  );
+}
+
 // ── Board ───────────────────────────────────────────────────────
 function Board({ g, T, GC, cellBox, grid }: { g: Game; T: ReturnType<typeof palette>; GC: ReturnType<typeof gradeColors>; cellBox: React.CSSProperties; grid: React.CSSProperties }) {
   const lastIdx = g.rows.length - 1;
+  const labelStyle: React.CSSProperties = { fontSize: 7.5, fontWeight: 700, color: T.muted, textAlign: "right", lineHeight: HINT_LINE, letterSpacing: "0.02em", textTransform: "uppercase", whiteSpace: "nowrap" };
   return (
     <div className={g.shake ? "tk-shake" : ""} style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
       {Array.from({ length: g.MAX }).map((_, ri) => {
@@ -100,21 +116,31 @@ function Board({ g, T, GC, cellBox, grid }: { g: Game; T: ReturnType<typeof pale
           const r = g.rows[ri];
           return (
             <div key={ri}>
-              <div style={grid}>
+              <Shell gutter={null} grid={grid}>
                 {r.map((pid, i) => (
                   <SubmittedTile key={i} name={pid} truthName={g.puzzle.members[i]} animate={ri === lastIdx}
                     delay={i * 230} g={g} T={T} GC={GC} cellBox={cellBox} />
                 ))}
-              </div>
-              <div style={{ ...grid, marginTop: 3 }}>
-                {r.map((pid, i) => <Hint key={i} name={pid} truthName={g.puzzle.members[i]} g={g} T={T} GC={GC} />)}
+              </Shell>
+              <div style={{ marginTop: 3 }}>
+                <Shell
+                  grid={grid}
+                  gutter={(
+                    <div style={{ paddingTop: 2 }}>
+                      <div style={labelStyle}>Mkt&nbsp;cap</div>
+                      <div style={labelStyle}>Sector</div>
+                    </div>
+                  )}
+                >
+                  {r.map((pid, i) => <Hint key={i} name={pid} truthName={g.puzzle.members[i]} g={g} T={T} GC={GC} />)}
+                </Shell>
               </div>
             </div>
           );
         }
         const rowPicks = isCurrent ? g.picks : Array(g.N).fill(null);
         return (
-          <div key={ri} style={grid}>
+          <Shell key={ri} gutter={null} grid={grid}>
             {rowPicks.map((pid, i) =>
               isCurrent ? (
                 <button key={i} onClick={() => g.openSlotAt(i)} style={{ padding: 0, border: "none", background: "none", cursor: "pointer" }}>
@@ -124,7 +150,7 @@ function Board({ g, T, GC, cellBox, grid }: { g: Game; T: ReturnType<typeof pale
                 <div key={i} style={cellBox} />
               ),
             )}
-          </div>
+          </Shell>
         );
       })}
     </div>
@@ -166,17 +192,20 @@ function Hint({ name, truthName, g, T, GC }: { name: string; truthName: string; 
   const cap = capGrade(guess, truth);
   const sec = sectorGrade(guess, truth);
   const tone = (grade: string) => (grade === "correct" ? GC.green : grade === "close" ? (g.settings.dark ? GC.yellow : "#9a7d12") : T.muted);
-  // One line per stat: the company's actual value + how it compares. minWidth:0
-  // lets the grid column stay 1fr (aligned with the tile) instead of widening to
-  // fit the text; lines wrap rather than overflow.
-  const line: React.CSSProperties = { fontSize: 8.5, fontWeight: 600, lineHeight: 1.3, wordBreak: "break-word" };
+  // One line per stat: the company's actual value + how it compares. Fixed line
+  // height + nowrap keeps each stat on a single row that lines up with the
+  // "Mkt cap / Sector" gutter labels; minWidth:0 keeps the column at 1fr.
+  const line: React.CSSProperties = { fontSize: 8, fontWeight: 600, lineHeight: HINT_LINE, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
+  // Short grade words so the value isn't pushed out of the narrow column.
+  const capWord = correct ? "✓" : cap.grade === "correct" ? "≈size" : cap.grade === "close" ? "close" : "far";
+  const secWord = correct ? "✓" : sec === "correct" ? "same" : sec === "close" ? "rel" : "diff";
   return (
     <div style={{ textAlign: "center", paddingTop: 2, minWidth: 0 }}>
       <div style={{ ...line, color: correct ? GC.green : tone(cap.grade) }}>
-        {capLabel(guess.cap)} {correct ? "✓" : <>{cap.arrow} {CAP_WORD[cap.grade]}</>}
+        {capLabel(guess.cap)} {cap.arrow}{correct ? "" : " "}{capWord}
       </div>
       <div style={{ ...line, color: correct ? GC.green : tone(sec) }}>
-        {SECTOR_LABEL[guess.sector]} {correct ? "✓" : `· ${SEC_WORD[sec]}`}
+        {SECTOR_LABEL[guess.sector]} · {secWord}
       </div>
     </div>
   );

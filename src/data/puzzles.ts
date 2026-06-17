@@ -61,10 +61,18 @@ export const PUZZLES: Puzzle[] = [
   { name: "DORITOS", members: ["Disney", "Oracle", "Reddit", "IBM", "Tesla", "Okta", "Samsung"],    note: "crunchy" },
 ];
 
-// NOTE: acronyms like MAMAA / MATANA need Alphabet spelled with an "A".
-// Since the universe lists this company as "Google" (G), they're omitted.
-// To support them, add an "Alphabet" alias to companies.ts and a synonym
-// map in lib/grading.ts so Google === Alphabet for membership checks.
+// Curated opening week (launch days #1..#7): start with the most recognizable,
+// approachable acronyms so new players ramp up gently. Day N uses OPENING_WEEK[N-1]
+// when it exists in the bank; after the opener, the daily rotation takes over.
+export const OPENING_WEEK: string[] = [
+  "MANGOS", // #1 — the flagship AI-era lineup
+  "MAANG",  // #2 — modern FAANG
+  "GAMMA",  // #3 — post-Meta FAANG
+  "MAGMA",  // #4 — the mega-cap five
+  "BATX",   // #5 — China big tech
+  "MAMAA",  // #6 — Cramer's FAANG rebrand
+  "MATANA", // #7 — the AI/EV era
+];
 
 export function validatePuzzles(): string[] {
   const errors: string[] = [];

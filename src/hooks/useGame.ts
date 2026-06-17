@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Settings, Stats } from "../types";
 import { COMPANIES, BY_NAME } from "../data/companies";
-import { PUZZLES } from "../data/puzzles";
-import { dayNumber, dailyIndex } from "../lib/daily";
+import { PUZZLES, OPENING_WEEK } from "../data/puzzles";
+import { dayNumber, msToNextDay } from "../lib/daily";
 import { canonical, sameCompany } from "../lib/grading";
 import {
   loadSettings, saveSettings, loadStats, saveStats, loadDaily, saveDaily,
@@ -16,9 +16,19 @@ const triesFor = (n: number) => (n >= 7 ? n + 1 : 6);
 const MAX_TRIES = 9; // ceiling across all puzzles — used to size the stats histogram
 const PRINTABLE = /^[a-z0-9 .&]$/i;
 
+// Which puzzle is the daily for a given day number. The first week is a curated
+// run of crowd-pleasers (OPENING_WEEK); after that it falls back to a rotation.
+function dailyIdxForDay(day: number): number {
+  if (day >= 1 && day <= OPENING_WEEK.length) {
+    const i = PUZZLES.findIndex((p) => p.name === OPENING_WEEK[day - 1]);
+    if (i >= 0) return i;
+  }
+  return ((day % PUZZLES.length) + PUZZLES.length) % PUZZLES.length;
+}
+
 export function useGame() {
-  const DAY = useMemo(() => dayNumber(), []);
-  const DAILY_IDX = useMemo(() => dailyIndex(PUZZLES.length), []);
+  const [DAY, setDAY] = useState(() => dayNumber());
+  const DAILY_IDX = useMemo(() => dailyIdxForDay(DAY), [DAY]);
 
   const [mode, setMode] = useState<"daily" | "forever">("daily");
   const [pIdx, setPIdx] = useState(DAILY_IDX);
@@ -106,6 +116,32 @@ export function useGame() {
   // ── ephemeral effects ────────────────────────────────────────
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(""), 1800); return () => clearTimeout(t); }, [toast]);
   useEffect(() => { if (openSlot !== null) setTimeout(() => inputRef.current?.focus(), 0); }, [openSlot]);
+
+  // ── midnight rollover ────────────────────────────────────────
+  // Re-arm a timer to the next UTC midnight; when it fires, bump DAY so an
+  // open tab picks up the new daily without a manual refresh. Also re-syncs if
+  // the device wakes from sleep past midnight.
+  useEffect(() => {
+    const tick = () => setDAY(dayNumber());
+    const t = setTimeout(tick, msToNextDay() + 1000);
+    const onVis = () => { if (document.visibilityState === "visible") tick(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { clearTimeout(t); document.removeEventListener("visibilitychange", onVis); };
+  }, [DAY]);
+
+  // When the day actually changes, load the new daily board (only if the player
+  // is on the daily — don't yank someone out of a Forever round).
+  const prevDay = useRef(DAY);
+  useEffect(() => {
+    if (prevDay.current === DAY) return;
+    prevDay.current = DAY;
+    if (mode !== "daily") return;
+    countedKey.current = null;
+    setPIdx(DAILY_IDX);
+    setRows(loadDaily(DAY)?.rows ?? []);
+    setPicks(Array(PUZZLES[DAILY_IDX].members.length).fill(null));
+    setOpenSlot(null); setQ(""); setShareText(""); setToast("New puzzle — good luck!");
+  }, [DAY, DAILY_IDX, mode]);
 
   // ── actions ──────────────────────────────────────────────────
   function flash(msg: string) { setToast(msg); setShake(true); setTimeout(() => setShake(false), 500); }

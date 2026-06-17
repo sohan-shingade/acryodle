@@ -10,3 +10,9 @@ export function dayNumber(now: number = Date.now()): number {
 export function dailyIndex(bankLength: number, now: number = Date.now()): number {
   return dayNumber(now) % bankLength;
 }
+
+// Milliseconds until the next UTC midnight — the moment dayNumber() ticks over.
+// (UTC midnights are exact multiples of one day from the Unix epoch.)
+export function msToNextDay(now: number = Date.now()): number {
+  return 86_400_000 - (now % 86_400_000);
+}

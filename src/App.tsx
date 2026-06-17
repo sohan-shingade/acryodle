@@ -90,15 +90,17 @@ export default function App() {
 
 // Left-gutter width: holds the per-row "Mkt cap / Sector" labels and keeps
 // every row's tiles aligned to the same left edge.
-const GUTTER = 40;
+const GUTTER = 34;
 const HINT_LINE = "13px"; // fixed line height shared by hints + gutter labels
 
-// One board row: a fixed-width gutter on the left, then the N-column grid.
+// One board row: a fixed-width label gutter on the left, the N-column grid, and
+// a matching empty spacer on the right so the grid stays centered in the column.
 function Shell({ gutter, grid, children }: { gutter: React.ReactNode; grid: React.CSSProperties; children: React.ReactNode }) {
   return (
     <div style={{ display: "flex", gap: 6, alignItems: "stretch" }}>
       <div style={{ width: GUTTER, flexShrink: 0 }}>{gutter}</div>
       <div style={{ flex: 1, minWidth: 0, ...grid }}>{children}</div>
+      <div style={{ width: GUTTER, flexShrink: 0 }} aria-hidden />
     </div>
   );
 }

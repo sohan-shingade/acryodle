@@ -67,12 +67,11 @@ export const PUZZLES: Puzzle[] = [
 export const OPENING_WEEK: string[] = [
   "MANGOS", // #1 — launch day (Jun 17), the flagship AI-era lineup
   "MANGOS", // #2 — repeat the launch word one more day
-  "MAANG",  // #3 — modern FAANG
-  "GAMMA",  // #4 — post-Meta FAANG
-  "MAGMA",  // #5 — the mega-cap five
-  "BATX",   // #6 — China big tech
-  "MAMAA",  // #7 — Cramer's FAANG rebrand
-  "MATANA", // #8 — the AI/EV era
+  "GAMMA",  // #3 — post-Meta FAANG
+  "MAGMA",  // #4 — the mega-cap five
+  "BATX",   // #5 — China big tech
+  "MAMAA",  // #6 — Cramer's FAANG rebrand
+  "MATANA", // #7 — the AI/EV era
 ];
 
 export function validatePuzzles(): string[] {

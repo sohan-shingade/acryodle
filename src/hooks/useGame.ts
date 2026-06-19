@@ -275,18 +275,31 @@ export function useGame() {
       e.preventDefault(); removeLast(); return;
     }
     if (e.key.length === 1 && PRINTABLE.test(e.key)) {
+      // If the search box already has focus, let it insert the character
+      // natively — handling it here too would type the letter twice.
+      if (document.activeElement === inputRef.current) return;
+      e.preventDefault();
       if (openSlot === null) {
         const idx = picks.findIndex((p) => !p);
-        if (idx >= 0) { e.preventDefault(); setOpenSlot(idx); setQ(e.key); }
-      } else if (document.activeElement !== inputRef.current) {
-        e.preventDefault(); setQ((s) => s + e.key); inputRef.current?.focus();
+        if (idx < 0) return;
+        setOpenSlot(idx); setQ(e.key);
+      } else {
+        setQ((s) => s + e.key);
       }
+      // Focus on the NEXT frame, not synchronously: focusing the input during
+      // this same keydown can let the browser also deliver this keystroke to it,
+      // producing a duplicated first letter. Deferring avoids that race.
+      requestAnimationFrame(() => inputRef.current?.focus());
     }
   }
   useEffect(() => {
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   });
+
+  // Keep the search box focused whenever a slot is open, so every keystroke
+  // flows through the input's own handler (one source of truth, no doubling).
+  useEffect(() => { if (openSlot !== null) inputRef.current?.focus(); }, [openSlot]);
 
   return {
     MAX, MAX_TRIES, DAY, puzzle, N, isDaily, mode,

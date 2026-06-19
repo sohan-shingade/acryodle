@@ -324,7 +324,9 @@ function ShareBar({ g, T, GC }: { g: Game; T: ReturnType<typeof palette>; GC: Re
 
   // X (Twitter) keeps text + url separate so the link unfurls a card.
   const PLATFORMS: { key: string; label: string; bg: string; fg: string; href: string }[] = [
-    { key: "x",        label: "𝕏",        bg: "#000000", fg: "#ffffff", href: `https://twitter.com/intent/tweet?text=${t}&url=${u}` },
+    // Fold the URL into the text (with its own newline) instead of the separate
+    // `url` param — X joins that param onto the last line with a space.
+    { key: "x",        label: "𝕏",        bg: "#000000", fg: "#ffffff", href: `https://twitter.com/intent/tweet?text=${tu}` },
     { key: "whatsapp", label: "WhatsApp", bg: "#25D366", fg: "#ffffff", href: `https://wa.me/?text=${tu}` },
     { key: "telegram", label: "Telegram", bg: "#229ED9", fg: "#ffffff", href: `https://t.me/share/url?url=${u}&text=${t}` },
     { key: "facebook", label: "Facebook", bg: "#1877F2", fg: "#ffffff", href: `https://www.facebook.com/sharer/sharer.php?u=${u}` },

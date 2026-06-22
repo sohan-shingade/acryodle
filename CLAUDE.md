@@ -4,7 +4,7 @@ Guidance for Claude Code (and humans) working in this repo.
 
 ## What this is
 
-TICKERDLE — a static, single-page daily game. A hidden acronym is a list of companies;
+ACRODLE — a static, single-page daily game. A hidden acronym is a list of companies;
 the player fills a company per slot and is graded Wordle-style (membership) plus on
 market cap and sector. Stack: Vite + React 18 + TypeScript, no backend, state in
 `localStorage`.
@@ -77,4 +77,4 @@ Edit `cap` values in `companies.ts`. Only relative magnitude matters; keep order
 - Caps/valuations are approximate (June 2026) and `pvt` ones are estimates.
 - Some AI-era acronyms are contested; the bank picks one reading and labels it.
 - Stats now persist; when testing streak logic, clear `localStorage` keys prefixed
-  `tickerdle:` between runs.
+  `acrodle:` between runs.

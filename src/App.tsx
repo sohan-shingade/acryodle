@@ -25,7 +25,7 @@ export default function App() {
             <Icon t={T} label="how to play" onClick={() => g.setModal("help")}>?</Icon>
             <Icon t={T} label="settings" onClick={() => g.setModal("settings")}>⚙</Icon>
           </div>
-          <h1 style={{ fontWeight: 800, letterSpacing: "0.06em", fontSize: 24, margin: 0 }}>ACRYODLE</h1>
+          <h1 style={{ fontWeight: 800, letterSpacing: "0.06em", fontSize: 24, margin: 0 }}>ACRODLE</h1>
           <div style={{ display: "flex", gap: 2 }}>
             <Icon t={T} label="stats" onClick={() => g.setModal("stats")}>📊</Icon>
             <Icon t={T} label="theme" onClick={g.toggleDark}>{g.settings.dark ? "☀" : "🌙"}</Icon>
@@ -330,7 +330,7 @@ function ShareBar({ g, T, GC }: { g: Game; T: ReturnType<typeof palette>; GC: Re
     { key: "whatsapp", label: "WhatsApp", bg: "#25D366", fg: "#ffffff", href: `https://wa.me/?text=${tu}` },
     { key: "telegram", label: "Telegram", bg: "#229ED9", fg: "#ffffff", href: `https://t.me/share/url?url=${u}&text=${t}` },
     { key: "facebook", label: "Facebook", bg: "#1877F2", fg: "#ffffff", href: `https://www.facebook.com/sharer/sharer.php?u=${u}` },
-    { key: "reddit",   label: "Reddit",   bg: "#FF4500", fg: "#ffffff", href: `https://www.reddit.com/submit?url=${u}&title=${encodeURIComponent(`ACRYODLE #${g.DAY}`)}` },
+    { key: "reddit",   label: "Reddit",   bg: "#FF4500", fg: "#ffffff", href: `https://www.reddit.com/submit?url=${u}&title=${encodeURIComponent(`ACRODLE #${g.DAY}`)}` },
     { key: "linkedin", label: "LinkedIn", bg: "#0A66C2", fg: "#ffffff", href: `https://www.linkedin.com/sharing/share-offsite/?url=${u}` },
   ];
 
@@ -411,7 +411,7 @@ function Modals({ g, T, GC, winPct }: { g: Game; T: ReturnType<typeof palette>; 
 
         {g.modal === "intro" && (
           <div style={{ fontSize: 13.5, lineHeight: 1.6 }}>
-            <h2 style={{ margin: "0 0 4px", letterSpacing: "0.05em" }}>ACRYODLE</h2>
+            <h2 style={{ margin: "0 0 4px", letterSpacing: "0.05em" }}>ACRODLE</h2>
             <p style={{ margin: "0 0 12px", color: T.muted, fontSize: 12.5 }}>A daily Wordle for Big Tech acronyms.</p>
 
             <p style={{ margin: "0 0 10px" }}>Think of <b>FAANG</b> — a famous acronym that's secretly a lineup of companies: Facebook · Apple · Amazon · Netflix · Google.</p>

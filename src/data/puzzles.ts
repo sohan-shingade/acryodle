@@ -70,7 +70,7 @@ export const OPENING_WEEK: string[] = [
   "GAMMA",  // #3 — post-Meta FAANG
   "MAGMA",  // #4 — the mega-cap five
   "BATX",   // #5 — China big tech
-  "MAMAA",  // #6 — Cramer's FAANG rebrand
+  "MANGOS", // #6 — Jun 22, back to the flagship AI-era lineup
   "MATANA", // #7 — the AI/EV era
 ];
 

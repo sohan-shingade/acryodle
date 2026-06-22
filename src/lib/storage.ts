@@ -1,6 +1,27 @@
 import type { Settings, Stats, DailyState } from "../types";
 
-const PREFIX = "acryodle:";
+const PREFIX = "acrodle:";
+const LEGACY_PREFIX = "acryodle:"; // pre-rename key namespace
+
+// One-time migration: copy any keys from the old "acryodle:" namespace into the
+// new "acrodle:" one so existing players keep their streaks/stats, then drop the
+// old keys. Safe to run every load — it no-ops once migrated.
+(function migrateLegacyKeys() {
+  try {
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith(LEGACY_PREFIX))
+      .forEach((oldKey) => {
+        const newKey = PREFIX + oldKey.slice(LEGACY_PREFIX.length);
+        if (localStorage.getItem(newKey) === null) {
+          const v = localStorage.getItem(oldKey);
+          if (v !== null) localStorage.setItem(newKey, v);
+        }
+        localStorage.removeItem(oldKey);
+      });
+  } catch {
+    /* storage unavailable — nothing to migrate */
+  }
+})();
 
 function load<T>(key: string, fallback: T): T {
   try {

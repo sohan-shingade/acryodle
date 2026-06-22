@@ -9,7 +9,7 @@ import "./index.css";
 
 if (import.meta.env.DEV) {
   const errors = validatePuzzles();
-  if (errors.length) console.error("[acryodle] puzzle data problems:\n" + errors.join("\n"));
+  if (errors.length) console.error("[acrodle] puzzle data problems:\n" + errors.join("\n"));
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

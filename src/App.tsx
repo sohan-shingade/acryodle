@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, type CSSProperties } from "react";
 import { useGame, type Game } from "./hooks/useGame";
 import { palette, gradeColors } from "./theme";
-import { capGrade, sectorGrade, sameCompany, canonical, SECTOR_LABEL, capLabel } from "./lib/grading";
-import type { Company } from "./types";
+import { capGrade, sectorGrade, sameCompany, canonical, SECTOR_LABEL, SECTOR_SHORT, capLabel, CAP_BANDS } from "./lib/grading";
+import { initialOf } from "./data/companies";
+import type { Company, Sector } from "./types";
 
 export default function App() {
   const g = useGame();
@@ -17,6 +18,8 @@ export default function App() {
 
   return (
     <div style={{ minHeight: "100vh", background: T.bg, color: T.ink, transition: "background .2s" }}>
+      <style>{`@media (max-width:1120px){.tk-side-legend{display:none!important}}@media (min-width:1121px){.tk-mobile-legend{display:none!important}}`}</style>
+      <SideLegend T={T} GC={GC} cb={g.settings.colorblind} />
       {g.confetti && <Confetti colors={[GC.green, GC.yellow, "#e6b800", "#888"]} />}
 
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "0 12px 40px" }}>
@@ -53,6 +56,15 @@ export default function App() {
         )}
 
         <Board g={g} T={T} GC={GC} cellBox={cellBox} grid={grid} />
+
+        {/* Mobile-only legend: side legend is hidden on narrow screens, so once
+            the first guess lands, offer the same key as a collapsible pop-out. */}
+        {g.rows.length > 0 && (
+          <details className="tk-mobile-legend" open style={{ marginTop: 12, border: `1px solid ${T.border}`, borderRadius: 8 }}>
+            <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, padding: "8px 12px", listStyle: "none" }}>How to read a tile ▾</summary>
+            <UiBreakdown T={T} GC={GC} cb={g.settings.colorblind} bare />
+          </details>
+        )}
 
         {!g.done && <Picker g={g} T={T} GC={GC} />}
 
@@ -159,12 +171,67 @@ function Board({ g, T, GC, cellBox, grid }: { g: Game; T: ReturnType<typeof pale
   );
 }
 
+// Cut-corner notch(es) on a tile. Both corners = right company (in the lineup,
+// wrong slot); one corner = only the acronym letter is right for this slot.
+function Notches({ left, right, size = 13 }: { left: boolean; right: boolean; size?: number }) {
+  const tri = (side: "left" | "right"): React.CSSProperties => ({
+    position: "absolute", top: 0, [side]: 0, width: 0, height: 0,
+    borderTop: `${size}px solid rgba(255,255,255,0.92)`,
+    [side === "left" ? "borderRight" : "borderLeft"]: `${size}px solid transparent`,
+  });
+  return <>{left && <span aria-hidden style={tri("left")} />}{right && <span aria-hidden style={tri("right")} />}</>;
+}
+
+// Tiny yellow sample tile used in the legend to show a notch pattern inline.
+function Notch({ yellow, left, right }: { yellow: string; left?: boolean; right?: boolean }) {
+  return (
+    <span style={{ position: "relative", display: "inline-block", width: 18, height: 18, background: yellow, borderRadius: 2, verticalAlign: "-4px" }}>
+      <Notches left={!!left} right={!!right} size={8} />
+    </span>
+  );
+}
+
+// Solid mini tile for the legend (green / gray swatches).
+function Swatch({ c }: { c: string }) {
+  return <span style={{ display: "inline-block", width: 18, height: 18, background: c, borderRadius: 2, verticalAlign: "-4px" }} />;
+}
+
+// Always-on legend pinned in the empty gutter right of the board. Hidden on
+// narrow screens via the media query in App (the help modal still has it).
+function SideLegend({ T, GC, cb }: { T: ReturnType<typeof palette>; GC: ReturnType<typeof gradeColors>; cb: boolean }) {
+  const yellow = cb ? GC.yellow : "#b59a2e";
+  const row = (sample: React.ReactNode, text: React.ReactNode) => (
+    <li style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 7 }}>
+      <span style={{ flexShrink: 0 }}>{sample}</span><span>{text}</span>
+    </li>
+  );
+  return (
+    <aside className="tk-side-legend" style={{ position: "fixed", top: 100, left: "calc(50% + 252px)", width: 212, fontSize: 11.5, color: T.muted, lineHeight: 1.4 }}>
+      <div style={{ border: `1px solid ${T.border}`, borderRadius: 10, padding: "12px 14px" }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: T.ink, marginBottom: 10 }}>How to read a tile</div>
+        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+          {row(<Swatch c={GC.green} />, <><b style={{ color: GC.green }}>green</b> — company, slot &amp; letter all right.</>)}
+          {row(<Notch yellow={yellow} left right />, <><b>both corners</b> — right company, wrong slot.</>)}
+          {row(<Notch yellow={yellow} left />, <><b>one corner</b> — right letter for that slot, wrong company.</>)}
+          {row(<Swatch c={GC.gray} />, <><b>gray</b> — not in the lineup.</>)}
+        </ul>
+        <div style={{ borderTop: `1px solid ${T.border}`, margin: "8px 0 8px" }} />
+        <div><b style={{ color: T.ink }}>Mkt cap</b> — ▲ answer bigger · ▼ smaller · <b style={{ color: GC.green }}>≈size</b> → <b style={{ color: yellow }}>close</b> → far.</div>
+        <div style={{ marginTop: 5 }}><b style={{ color: T.ink }}>Sector</b> — <b style={{ color: GC.green }}>same</b> → <b style={{ color: yellow }}>relative</b> → diff.</div>
+      </div>
+    </aside>
+  );
+}
+
 function SubmittedTile({ name, truthName, animate, delay, g, T, GC, cellBox }: { name: string; truthName: string; animate: boolean; delay: number; g: Game; T: ReturnType<typeof palette>; GC: ReturnType<typeof gradeColors>; cellBox: React.CSSProperties }) {
   const ref = useRef<HTMLDivElement | null>(null);
   const c = g.BY_NAME[name];
   const exact = sameCompany(name, truthName);
   const inSet = g.puzzle.members.some((m) => sameCompany(m, name));
-  const fill = exact ? GC.green : inSet ? GC.yellow : GC.gray;
+  // Right acronym letter for this slot, wrong company.
+  const initMatch = !exact && initialOf(name) === initialOf(truthName);
+  // Partial (yellow) if the company is in the lineup OR at least the letter fits.
+  const fill = exact ? GC.green : inSet || initMatch ? GC.yellow : GC.gray;
   useEffect(() => {
     if (!animate || !ref.current || !ref.current.animate) return;
     ref.current.animate(
@@ -180,7 +247,8 @@ function SubmittedTile({ name, truthName, animate, delay, g, T, GC, cellBox }: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <div ref={ref} style={{ ...cellBox, background: fill, borderColor: fill, color: "#fff" }}>
+    <div ref={ref} style={{ ...cellBox, position: "relative", background: fill, borderColor: fill, color: "#fff" }}>
+      <Notches left={!exact && (inSet || initMatch)} right={!exact && inSet} />
       <span style={{ fontSize: "clamp(15px,5vw,24px)", fontWeight: 700, lineHeight: 1 }}>{c.name[0].toUpperCase()}</span>
       <span style={{ fontSize: "clamp(6px,1.6vw,8px)", marginTop: 2, maxWidth: "94%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
     </div>
@@ -198,16 +266,18 @@ function Hint({ name, truthName, g, T, GC }: { name: string; truthName: string; 
   // height + nowrap keeps each stat on a single row that lines up with the
   // "Mkt cap / Sector" gutter labels; minWidth:0 keeps the column at 1fr.
   const line: React.CSSProperties = { fontSize: 8, fontWeight: 600, lineHeight: HINT_LINE, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
-  // Short grade words so the value isn't pushed out of the narrow column.
-  const capWord = correct ? "✓" : cap.grade === "correct" ? "≈size" : cap.grade === "close" ? "close" : "far";
-  const secWord = correct ? "✓" : sec === "correct" ? "same" : sec === "close" ? "rel" : "diff";
+  // Color already encodes the grade, so the word is redundant for sighted play
+  // and overflows the narrow mobile column. Keep words only in colorblind mode.
+  const cb = g.settings.colorblind;
+  const capWord = correct ? " ✓" : cb ? ` ${cap.grade === "correct" ? "≈size" : cap.grade === "close" ? "close" : "far"}` : "";
+  const secWord = correct ? " ✓" : cb ? ` · ${sec === "correct" ? "same" : sec === "close" ? "rel" : "diff"}` : "";
   return (
     <div style={{ textAlign: "center", paddingTop: 2, minWidth: 0 }}>
       <div style={{ ...line, color: correct ? GC.green : tone(cap.grade) }}>
-        {capLabel(guess.cap)} {cap.arrow}{correct ? "" : " "}{capWord}
+        {capLabel(guess.cap)} {cap.arrow}{capWord}
       </div>
       <div style={{ ...line, color: correct ? GC.green : tone(sec) }}>
-        {SECTOR_LABEL[guess.sector]} · {secWord}
+        {SECTOR_SHORT[guess.sector]}{secWord}
       </div>
     </div>
   );
@@ -230,6 +300,43 @@ function InputTile({ name, active, slot, g, T, cellBox }: { name: string | null;
   );
 }
 
+// Sector/market-cap dropdowns that narrow the candidate list. Options come
+// straight from the grading layer so they stay in sync with the data.
+const SECTOR_OPTIONS = (Object.entries(SECTOR_LABEL) as [Sector, string][]).sort((a, b) => a[1].localeCompare(b[1]));
+
+function Filters({ g, T, GC }: { g: Game; T: ReturnType<typeof palette>; GC: ReturnType<typeof gradeColors> }) {
+  const active = g.sectorFilter !== "all" || g.capFilter !== "all";
+  const sel: React.CSSProperties = {
+    flex: 1, minWidth: 0, boxSizing: "border-box", border: `1px solid ${active ? GC.green : T.border}`,
+    borderRadius: 6, padding: "6px 8px", fontSize: 12, background: T.bg, color: T.ink, cursor: "pointer", outline: "none",
+  };
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <div style={{ display: "flex", gap: 6 }}>
+        <select aria-label="Filter by sector" value={g.sectorFilter}
+          onChange={(e) => g.setSectorFilter(e.target.value as Sector | "all")} style={sel}>
+          <option value="all">All sectors</option>
+          {SECTOR_OPTIONS.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+        </select>
+        <select aria-label="Filter by market cap" value={g.capFilter}
+          onChange={(e) => g.setCapFilter(e.target.value)} style={sel}>
+          <option value="all">Any market cap</option>
+          {CAP_BANDS.map((b) => <option key={b.key} value={b.key}>{b.label}</option>)}
+        </select>
+      </div>
+      {active && (
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 5, fontSize: 11, color: T.muted }}>
+          <span>{g.list.length} match{g.list.length === 1 ? "" : "es"}</span>
+          <button onClick={() => { g.setSectorFilter("all"); g.setCapFilter("all"); }}
+            style={{ background: "none", border: "none", color: GC.green, fontWeight: 700, fontSize: 11, cursor: "pointer", padding: 0 }}>
+            clear filters
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Picker ──────────────────────────────────────────────────────
 function Picker({ g, T, GC }: { g: Game; T: ReturnType<typeof palette>; GC: ReturnType<typeof gradeColors> }) {
   return (
@@ -246,6 +353,7 @@ function Picker({ g, T, GC }: { g: Game; T: ReturnType<typeof palette>; GC: Retu
             placeholder="Search companies… (Enter picks top)"
             style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: 6, padding: "8px 10px", fontSize: 13, marginBottom: 8, outline: "none", background: T.bg, color: T.ink }}
           />
+          <Filters g={g} T={T} GC={GC} />
           <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 6, maxHeight: 210, overflow: "auto" }}>
             {g.list.map((c: Company, idx: number) => {
               const st = g.known[canonical(c.name)];
@@ -367,13 +475,16 @@ function ShareBar({ g, T, GC }: { g: Game; T: ReturnType<typeof palette>; GC: Re
 }
 
 // Annotated breakdown of a graded tile — shared by the intro + how-to-play.
-function UiBreakdown({ T, GC, cb }: { T: ReturnType<typeof palette>; GC: ReturnType<typeof gradeColors>; cb: boolean }) {
+function UiBreakdown({ T, GC, cb, bare = false }: { T: ReturnType<typeof palette>; GC: ReturnType<typeof gradeColors>; cb: boolean; bare?: boolean }) {
   const yellow = cb ? GC.yellow : "#b59a2e";
   const lbl: React.CSSProperties = { fontSize: 7.5, fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: "0.02em", width: 38, textAlign: "right", flexShrink: 0 };
   const val: React.CSSProperties = { fontSize: 9, fontWeight: 600 };
+  // bare = caller supplies the box (e.g. the mobile pop-out) — drop our own
+  // border/title so it isn't a box within a box.
+  const wrap: React.CSSProperties = bare ? { padding: "0 12px 12px" } : { border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px", margin: "0 0 12px" };
   return (
-    <div style={{ border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px", margin: "0 0 12px" }}>
-      <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Reading a tile</div>
+    <div style={wrap}>
+      {!bare && <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Reading a tile</div>}
       <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
         <div style={{ flexShrink: 0 }}>
           <div style={{ width: 56, height: 56, background: yellow, color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", borderRadius: 3 }}>
@@ -386,7 +497,10 @@ function UiBreakdown({ T, GC, cb }: { T: ReturnType<typeof palette>; GC: ReturnT
           </div>
         </div>
         <ul style={{ margin: 0, paddingLeft: 15, fontSize: 11.5, color: T.muted, lineHeight: 1.5 }}>
-          <li><b style={{ color: GC.green }}>green</b> exact · <b style={{ color: yellow }}>yellow</b> in lineup, wrong slot · <b>gray</b> not in it.</li>
+          <li><b style={{ color: GC.green }}>green</b> = company, slot &amp; letter all correct.</li>
+          <li><Notch yellow={yellow} left right /> <b>both corners notched</b> = right company, wrong slot.</li>
+          <li><Notch yellow={yellow} left /> <b>one corner notched</b> = right letter for this slot, wrong company.</li>
+          <li><b>gray</b> = not in the lineup at all.</li>
           <li><b>Mkt cap</b>: ▲ answer bigger · ▼ smaller. How near: <b>≈size</b> → <b>close</b> → <b>far</b>.</li>
           <li><b>Sector</b>: <b>same</b> → <b>rel</b>ated → <b>diff</b>erent.</li>
         </ul>

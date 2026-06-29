@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Settings, Stats } from "../types";
+import type { Settings, Stats, Sector } from "../types";
 import { COMPANIES, BY_NAME } from "../data/companies";
 import { PUZZLES, OPENING_WEEK } from "../data/puzzles";
 import { dayNumber, msToNextDay } from "../lib/daily";
-import { canonical, sameCompany } from "../lib/grading";
+import { canonical, sameCompany, capBand } from "../lib/grading";
 import {
   loadSettings, saveSettings, loadStats, saveStats, loadDaily, saveDaily,
   loadSeenIntro, saveSeenIntro,
@@ -44,6 +44,8 @@ export function useGame() {
   const [picks, setPicks] = useState<(string | null)[]>(Array(N).fill(null));
   const [openSlot, setOpenSlot] = useState<number | null>(null);
   const [q, setQ] = useState("");
+  const [sectorFilter, setSectorFilter] = useState<Sector | "all">("all");
+  const [capFilter, setCapFilter] = useState<string>("all");
 
   const [settings, setSettings] = useState<Settings>(loadSettings);
   const [stats, setStats] = useState<Stats>(loadStats);
@@ -67,8 +69,14 @@ export function useGame() {
   const filled = picks.every(Boolean);
 
   const list = useMemo(() => {
+    // Sector + market-cap filters narrow the universe before text ranking.
+    const base = COMPANIES.filter(
+      (c) =>
+        (sectorFilter === "all" || c.sector === sectorFilter) &&
+        (capFilter === "all" || capBand(c.cap) === capFilter),
+    );
     const s = q.trim().toLowerCase();
-    if (!s) return COMPANIES;
+    if (!s) return base;
     // Rank: exact > prefix > word-boundary > substring; ties keep original order.
     const rank = (name: string) => {
       const n = name.toLowerCase();
@@ -77,12 +85,12 @@ export function useGame() {
       if (n.split(/[^a-z0-9]+/).some((w) => w.startsWith(s))) return 2;
       return 3;
     };
-    return COMPANIES
+    return base
       .map((c, i) => ({ c, i, r: rank(c.name) }))
       .filter((x) => x.c.name.toLowerCase().includes(s))
       .sort((a, b) => a.r - b.r || a.i - b.i)
       .map((x) => x.c);
-  }, [q]);
+  }, [q, sectorFilter, capFilter]);
 
   const known = useMemo(() => {
     const m: Record<string, "in" | "out"> = {};
@@ -278,6 +286,8 @@ export function useGame() {
       // If the search box already has focus, let it insert the character
       // natively — handling it here too would type the letter twice.
       if (document.activeElement === inputRef.current) return;
+      // Don't hijack keystrokes meant for the filter dropdowns.
+      if (document.activeElement instanceof HTMLSelectElement) return;
       e.preventDefault();
       if (openSlot === null) {
         const idx = picks.findIndex((p) => !p);
@@ -305,6 +315,7 @@ export function useGame() {
     MAX, MAX_TRIES, DAY, puzzle, N, isDaily, mode,
     rows, picks, openSlot, q, filled, won, lost, done,
     list, known, learned, BY_NAME,
+    sectorFilter, capFilter, setSectorFilter, setCapFilter,
     settings, stats, toast, shake, confetti, shareText, modal, inputRef,
     setQ, choose, submit, removeLast, openSlotAt, startForever, nextForever, backToDaily, share, nativeShare, buildShare, setModal, dismissIntro,
     toggleDark: () => setSettings((s) => ({ ...s, dark: !s.dark })),

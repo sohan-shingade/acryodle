@@ -27,6 +27,17 @@ export const SECTOR_LABEL: Record<Sector, string> = {
   conglomerate: "Conglomerate",
 };
 
+// Short sector names for the cramped per-tile hint column (full names live in
+// SECTOR_LABEL, used where there's room).
+export const SECTOR_SHORT: Record<Sector, string> = {
+  social: "Social", consumer: "Consumer", ecommerce: "E-comm",
+  cloud: "Cloud", semis: "Semis", ailab: "AI Lab", media: "Media",
+  space: "Aero", fintech: "Fintech", finance: "Banking", search: "Search/Ads",
+  ev: "Auto/EV", energy: "Energy", pharma: "Pharma", retail: "Retail",
+  networking: "Network", hardware: "Hardware", mobility: "Mobility",
+  conglomerate: "Conglom",
+};
+
 export const CAP_WORD: Record<Grade, string> = { correct: "≈ size", close: "close", wrong: "far off" };
 export const SEC_WORD: Record<Grade, string> = { correct: "same sector", close: "related", wrong: "different" };
 
@@ -48,3 +59,12 @@ export function sectorGrade(guess: Company, truth: Company): Grade {
 }
 
 export const capLabel = (g: number) => (g >= 1000 ? `$${(g / 1000).toFixed(1)}T` : `$${g}B`);
+
+// Market-cap buckets for the picker's filter. Half-open ranges [min, max).
+export const CAP_BANDS: { key: string; label: string; min: number; max: number }[] = [
+  { key: "mega",  label: "Mega ($1T+)",       min: 1000, max: Infinity },
+  { key: "large", label: "Large ($200B–1T)",  min: 200,  max: 1000 },
+  { key: "mid",   label: "Mid ($50–200B)",    min: 50,   max: 200 },
+  { key: "small", label: "Small (<$50B)",     min: 0,    max: 50 },
+];
+export const capBand = (cap: number) => CAP_BANDS.find((b) => cap >= b.min && cap < b.max)?.key ?? "";
